@@ -7,13 +7,6 @@
 
 #ifndef _TYPES_H
 #define _TYPES_H
-
-
-#include <winsock2.h>
-#include <windows.h>
-#include <stdio.h>
-#include "log.h"
-
 /*
  * Keep the compiler happy
  */
@@ -29,37 +22,45 @@
  */
 #pragma warning(disable: 4018 4100 4127 4201 4389 4800)
 
-
 /*
  * Simple types
  */
 typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
+typedef unsigned char byte;
 typedef char int8;
 typedef short int16;
 typedef int int32;
 
 /*
- * Macros
+ * Additional headers
  */
-#if defined(_DEBUG)
-#define BREAK  DebugBreak();
+#if defined(_WINDOWS)
+#  include "platform_windows.h"
+#elif defined(__GNUC__)
+#  include "platform_linux.h"
 #else
-#define BREAK  exit(1);
+#  error Unsupported platform
 #endif
 
+#include "log.h"
 
+
+
+/*
+ * Macros
+ */
 #define ASSERT(x)                                           \
    do {                                                     \
       if (!(x)) {                                           \
-         char buf[1024];                                    \
-         sprintf_s(buf, sizeof(buf) - 1, "Assertion: %s @ %s:%d (pid:%d)", #x, __FILE__, __LINE__, GetCurrentProcessId()); \
-         Log("%s\n", buf);                                  \
+         char assert_buf[1024];                             \
+         snprintf(assert_buf, sizeof(assert_buf) - 1, "Assertion: %s @ %s:%d (pid:%d)", #x, __FILE__, __LINE__, Platform::GetProcessID()); \
+         Log("%s\n", assert_buf);                           \
          Log("\n");                                         \
          Log("\n");                                         \
          Log("\n");                                         \
-         MessageBoxA(NULL, buf, "GGPO Assertion Failed", MB_OK | MB_ICONEXCLAMATION); \
+         Platform::AssertFailed(assert_buf);                \
          exit(0);                                           \
       }                                                     \
    } while (false)
@@ -73,7 +74,11 @@ typedef int int32;
 #endif
 
 #ifndef MAX
-#  define MAX(x, y)        ((x) > (y) ? (x) : (y))
+#  define MAX(x, y)        (((x) > (y)) ? (x) : (y))
 #endif
 
+#ifndef MIN
+#  define MIN(x, y)        (((x) < (y)) ? (x) : (y))
 #endif
+
+#endif // _TYPES_H

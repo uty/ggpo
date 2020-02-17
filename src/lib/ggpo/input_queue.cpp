@@ -64,7 +64,7 @@ InputQueue::DiscardConfirmedFrames(int frame)
    ASSERT(frame >= 0);
 
    if (_last_frame_requested != GameInput::NullFrame) {
-      frame = min(frame, _last_frame_requested);
+      frame = MIN(frame, _last_frame_requested);
    }
 
    Log("discarding confirmed frames up to %d (last_added:%d length:%d [head:%d tail:%d]).\n", 
@@ -311,11 +311,10 @@ InputQueue::Log(const char *fmt, ...)
    size_t offset;
    va_list args;
 
-   sprintf(buf, "input q%d | ", _id);
-   offset = strlen(buf);
+   offset = sprintf_s(buf, ARRAY_SIZE(buf), "input q%d | ", _id);
    va_start(args, fmt);
-   vsnprintf(buf + offset, ARRAYSIZE(buf) - offset - 1, fmt, args);
-   buf[ARRAYSIZE(buf)-1] = '\0';
+   vsnprintf(buf + offset, ARRAY_SIZE(buf) - offset - 1, fmt, args);
+   buf[ARRAY_SIZE(buf)-1] = '\0';
    ::Log(buf);
    va_end(args);
 }

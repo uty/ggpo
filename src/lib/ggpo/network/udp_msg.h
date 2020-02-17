@@ -27,8 +27,8 @@ struct UdpMsg
    };
 
    struct connect_status {
-      int         disconnected:1;
-      int         last_frame:31;
+      unsigned int   disconnected:1;
+      int            last_frame:31;
    };
 
    struct {
@@ -84,7 +84,7 @@ public:
       int size;
 
       switch (hdr.type) {
-      case SyncRequest:   return sizeof(u.sync_reply);
+      case SyncRequest:   return sizeof(u.sync_request);
       case SyncReply:     return sizeof(u.sync_reply);
       case QualityReport: return sizeof(u.quality_report);
       case QualityReply:  return sizeof(u.quality_reply);
@@ -99,7 +99,7 @@ public:
       return 0;
    }
 
-   UdpMsg(MsgType t) { hdr.type = t; }
+   UdpMsg(MsgType t) { hdr.type = (uint8)t; }
 };
 
 #pragma pack(pop)

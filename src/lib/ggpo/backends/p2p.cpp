@@ -13,7 +13,7 @@ static const int DEFAULT_DISCONNECT_NOTIFY_START   = 750;
 
 Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
                                    const char *gamename,
-                                   int localport,
+                                   uint16 localport,
                                    int num_players,
                                    int input_size) :
     _num_players(num_players),
@@ -62,7 +62,7 @@ Peer2PeerBackend::~Peer2PeerBackend()
 
 void
 Peer2PeerBackend::AddRemotePlayer(char *ip,
-                                  int port,
+                                  uint16 port,
                                   int queue)
 {
    /*
@@ -77,7 +77,7 @@ Peer2PeerBackend::AddRemotePlayer(char *ip,
 }
 
 GGPOErrorCode Peer2PeerBackend::AddSpectator(char *ip,
-                                             int port)
+                                             uint16 port)
 {
    if (_num_spectators == GGPO_MAX_SPECTATORS) {
       return GGPO_ERRORCODE_TOO_MANY_SPECTATORS;
@@ -148,7 +148,7 @@ Peer2PeerBackend::DoPoll(int timeout)
          if (current_frame > _next_recommended_sleep) {
             int interval = 0;
             for (int i = 0; i < _num_players; i++) {
-               interval = max(interval, _endpoints[i].RecommendFrameDelay());
+               interval = MAX(interval, _endpoints[i].RecommendFrameDelay());
             }
 
             if (interval > 0) {
@@ -181,7 +181,7 @@ int Peer2PeerBackend::Poll2Players(int current_frame)
          queue_connected = _endpoints[i].GetPeerConnectStatus(i, &ignore);
       }
       if (!_local_connect_status[i].disconnected) {
-         total_min_confirmed = min(_local_connect_status[i].last_frame, total_min_confirmed);
+         total_min_confirmed = MIN(_local_connect_status[i].last_frame, total_min_confirmed);
       }
       Log("  local endp: connected = %d, last_received = %d, total_min_confirmed = %d.\n", !_local_connect_status[i].disconnected, _local_connect_status[i].last_frame, total_min_confirmed);
       if (!queue_connected && !_local_connect_status[i].disconnected) {
@@ -211,7 +211,7 @@ int Peer2PeerBackend::PollNPlayers(int current_frame)
             bool connected = _endpoints[i].GetPeerConnectStatus(queue, &last_received);
 
             queue_connected = queue_connected && connected;
-            queue_min_confirmed = min(last_received, queue_min_confirmed);
+            queue_min_confirmed = MIN(last_received, queue_min_confirmed);
             Log("  endpoint %d: connected = %d, last_received = %d, queue_min_confirmed = %d.\n", i, connected, last_received, queue_min_confirmed);
          } else {
             Log("  endpoint %d: ignoring... not running.\n", i);
@@ -219,12 +219,12 @@ int Peer2PeerBackend::PollNPlayers(int current_frame)
       }
       // merge in our local status only if we're still connected!
       if (!_local_connect_status[queue].disconnected) {
-         queue_min_confirmed = min(_local_connect_status[queue].last_frame, queue_min_confirmed);
+         queue_min_confirmed = MIN(_local_connect_status[queue].last_frame, queue_min_confirmed);
       }
       Log("  local endp: connected = %d, last_received = %d, queue_min_confirmed = %d.\n", !_local_connect_status[queue].disconnected, _local_connect_status[queue].last_frame, queue_min_confirmed);
 
       if (queue_connected) {
-         total_min_confirmed = min(queue_min_confirmed, total_min_confirmed);
+         total_min_confirmed = MIN(queue_min_confirmed, total_min_confirmed);
       } else {
          // check to see if this disconnect notification is further back than we've been before.  If
          // so, we need to re-adjust.  This can happen when we detect our own disconnect at frame n
@@ -498,7 +498,7 @@ Peer2PeerBackend::DisconnectPlayerQueue(int queue, int syncto)
    Log("Changing queue %d local connect status for last frame from %d to %d on disconnect request (current: %d).\n",
        queue, _local_connect_status[queue].last_frame, syncto, framecount);
 
-   _local_connect_status[queue].disconnected = true;
+   _local_connect_status[queue].disconnected = 1;
    _local_connect_status[queue].last_frame = syncto;
 
    if (syncto < framecount) {
